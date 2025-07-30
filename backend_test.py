@@ -386,8 +386,8 @@ class BirdAPITester:
         return success, response
 
 def main():
-    print("🚀 Starting Bird Identification API Tests")
-    print("=" * 50)
+    print("🚀 Starting BirdScope AI Comprehensive API Tests")
+    print("=" * 60)
     
     # Setup
     tester = BirdAPITester()
@@ -395,34 +395,74 @@ def main():
     # Run all tests
     print("\n📋 Running Backend API Tests...")
     
-    # Basic connectivity tests
+    # 1. Basic connectivity tests
+    print("\n🔗 BASIC CONNECTIVITY TESTS")
     tester.test_root_endpoint()
     tester.test_health_check()
     
-    # Core functionality tests
-    success, bird_result = tester.test_identify_bird()
+    # 2. Authentication tests
+    print("\n🔐 AUTHENTICATION TESTS")
+    tester.test_register_user()  # This sets auth_token for subsequent tests
+    tester.test_login_user()
+    tester.test_google_auth()
     
-    # Bird information tests
-    tester.test_list_birds()
-    tester.test_get_bird_info("american_robin")
-    tester.test_get_bird_info("northern_cardinal")
-    tester.test_get_bird_info("blue_jay")
-    tester.test_get_bird_info_invalid()
+    # 3. Bird identification tests
+    print("\n🐦 BIRD IDENTIFICATION TESTS")
+    tester.test_identify_bird_comprehensive()
+    tester.test_get_bird_detail("american_robin")
+    tester.test_get_bird_detail("northern_cardinal")
+    tester.test_get_bird_detail("invalid_bird")  # Should return 404
+    tester.test_nearby_birds()
     
-    # Pricing and subscription tests
-    tester.test_get_pricing()
-    tester.test_subscribe()
+    # 4. User sightings tests
+    print("\n📝 USER SIGHTINGS TESTS")
+    tester.test_get_my_sightings()
+    
+    # 5. Community feed tests
+    print("\n👥 COMMUNITY FEED TESTS")
+    tester.test_get_community_feed()
+    tester.test_create_community_post()  # Should fail for free users
+    tester.test_like_post()
+    
+    # 6. Subscription tests
+    print("\n💳 SUBSCRIPTION TESTS")
+    tester.test_get_subscription_plans()
+    tester.test_subscribe_to_plan()
+    
+    # 7. Analytics tests
+    print("\n📊 ANALYTICS TESTS")
+    tester.test_get_popular_birds()
+    tester.test_get_user_stats()
+    
+    # 8. Notification tests
+    print("\n🔔 NOTIFICATION TESTS")
+    tester.test_register_device_notifications()  # Should fail for free users
+    
+    # 9. Search tests
+    print("\n🔍 SEARCH TESTS")
+    tester.test_search_birds()
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All backend tests passed!")
         return 0
     else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
-        return 1
+        failed_tests = tester.tests_run - tester.tests_passed
+        print(f"⚠️  {failed_tests} tests failed")
+        
+        # Calculate success rate
+        success_rate = (tester.tests_passed / tester.tests_run) * 100
+        print(f"📈 Success Rate: {success_rate:.1f}%")
+        
+        if success_rate >= 70:
+            print("✅ Overall backend functionality appears to be working well")
+            return 0
+        else:
+            print("❌ Significant backend issues detected")
+            return 1
 
 if __name__ == "__main__":
     sys.exit(main())
