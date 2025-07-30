@@ -13,10 +13,20 @@ class BirdAPITester:
         self.auth_token = None
         self.test_user_id = None
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, files=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, files=None, headers=None):
         """Run a single API test"""
         url = f"{self.base_url}/{endpoint}" if not endpoint.startswith('http') else endpoint
-        headers = {'Content-Type': 'application/json'} if not files else {}
+        
+        # Default headers
+        default_headers = {'Content-Type': 'application/json'} if not files else {}
+        
+        # Add auth token if available
+        if self.auth_token:
+            default_headers['Authorization'] = f'Bearer {self.auth_token}'
+        
+        # Merge with provided headers
+        if headers:
+            default_headers.update(headers)
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
@@ -24,12 +34,16 @@ class BirdAPITester:
         
         try:
             if method == 'GET':
-                response = requests.get(url, headers=headers, timeout=10)
+                response = requests.get(url, headers=default_headers, timeout=10)
             elif method == 'POST':
                 if files:
-                    response = requests.post(url, files=files, timeout=10)
+                    # Remove Content-Type for file uploads
+                    auth_headers = {k: v for k, v in default_headers.items() if k != 'Content-Type'}
+                    response = requests.post(url, files=files, headers=auth_headers, timeout=10)
                 else:
-                    response = requests.post(url, json=data, headers=headers, timeout=10)
+                    response = requests.post(url, json=data, headers=default_headers, timeout=10)
+            elif method == 'DELETE':
+                response = requests.delete(url, headers=default_headers, timeout=10)
 
             success = response.status_code == expected_status
             if success:
