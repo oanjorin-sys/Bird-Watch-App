@@ -122,8 +122,30 @@ class BirdAPITester:
 
     def test_subscribe(self):
         """Test subscription endpoint"""
-        return self.run_test("Subscribe to Plan", "POST", "api/subscribe", 200, 
-                           data={"plan": "premium", "email": "test@example.com"})
+        # This endpoint expects form data, not JSON
+        try:
+            url = f"{self.base_url}/api/subscribe"
+            data = {"plan": "premium", "email": "test@example.com"}
+            response = requests.post(url, data=data, timeout=10)
+            
+            self.tests_run += 1
+            print(f"\n🔍 Testing Subscribe to Plan...")
+            print(f"   URL: {url}")
+            
+            success = response.status_code == 200
+            if success:
+                self.tests_passed += 1
+                print(f"✅ Passed - Status: {response.status_code}")
+                response_data = response.json()
+                print(f"   Subscription ID: {response_data.get('subscription_id', 'N/A')}")
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                print(f"   Response: {response.text[:200]}...")
+            
+            return success, response.json() if success else {}
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False, {}
 
 def main():
     print("🚀 Starting Bird Identification API Tests")
